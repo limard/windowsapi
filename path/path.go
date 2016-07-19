@@ -1,4 +1,4 @@
-package dir
+package path
 
 import (
 	"log"
@@ -26,6 +26,7 @@ func GetPrintProcessorDirectory(platform string) (path string) {
 	if strings.Contains(err.Error(), "successfully") == false {
 		log.Printf("ret: %#+v\n", ret)
 		log.Printf("err: %#+v\n", err.Error())
+		return
 	}
 
 	path = strings.Trim(string(pt[0:num/2]), string(0))
@@ -52,6 +53,7 @@ func GetPrinterDriverDirectory(platform string) (path string) {
 	if strings.Contains(err.Error(), "successfully") == false {
 		log.Printf("ret: %#+v\n", ret)
 		log.Printf("err: %#+v\n", err.Error())
+		return
 	}
 
 	path = strings.Trim(string(pt[0:num/2]), string(0))
@@ -61,12 +63,18 @@ func GetPrinterDriverDirectory(platform string) (path string) {
 
 // GetSystemDirectory ...
 func GetSystemDirectory() (path string) {
-	dllShell := syscall.NewLazyDLL("Kernel32.dll")
-	procSHGetFolderPath := dllShell.NewProc("GetSystemDirectoryA")
+	d := syscall.NewLazyDLL("Kernel32.dll")
+	p := d.NewProc("GetSystemDirectoryA")
 
 	pt := make([]byte, 256)
 	num := 0
-	procSHGetFolderPath.Call(uintptr(unsafe.Pointer(&pt[0])), uintptr(unsafe.Pointer(&num)))
+	ret, _, err := p.Call(uintptr(unsafe.Pointer(&pt[0])), uintptr(unsafe.Pointer(&num)))
+
+	if strings.Contains(err.Error(), "successfully") == false {
+		log.Printf("ret: %#+v\n", ret)
+		log.Printf("err: %#+v\n", err.Error())
+		return
+	}
 
 	path = strings.Trim(string(pt), string(0))
 
