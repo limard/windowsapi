@@ -80,3 +80,21 @@ func GetSystemDirectory() (path string) {
 
 	return
 }
+
+// GetCommmonAppDataDirectory ...
+func GetCommmonAppDataDirectory() (path string, err error) {
+	d := syscall.NewLazyDLL("Shell32.dll")
+	p := d.NewProc("SHGetFolderPathA")
+
+	pt := make([]byte, 256)
+	ret, _, err := p.Call(uintptr(0), uintptr(0x23), uintptr(0), uintptr(0), uintptr(unsafe.Pointer(&pt[0])))
+
+	if strings.Contains(err.Error(), "successfully") == false {
+		log.Printf("ret: %#+v\n", ret)
+		log.Printf("err: %#+v\n", err.Error())
+		return
+	}
+
+	path = strings.Trim(string(pt), string(0))
+	return path, nil
+}
