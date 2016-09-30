@@ -2,7 +2,6 @@ package redirection
 
 import (
 	"log"
-	"strings"
 	"syscall"
 	"unsafe"
 )
@@ -15,8 +14,7 @@ func Wow64DisableWow64FsRedirection() (oldvalue int, err error) {
 	ret, _, err := p.Call(
 		uintptr(unsafe.Pointer(&oldvalue)))
 
-	if strings.Contains(err.Error(), "successfully") == false {
-		log.Printf("ret: %#+v\n", ret)
+	if ret == 0 {
 		log.Printf("err: %#+v\n", err.Error())
 		return
 	}
@@ -32,8 +30,7 @@ func Wow64EnableWow64FsRedirection(enable int) (err error) {
 	ret, _, err := p.Call(
 		uintptr(enable))
 
-	if strings.Contains(err.Error(), "successfully") == false {
-		log.Printf("ret: %#+v\n", ret)
+	if ret == 0 {
 		log.Printf("err: %#+v\n", err.Error())
 		return
 	}
@@ -49,8 +46,7 @@ func Wow64RevertWow64FsRedirection(oldValue int) (err error) {
 	ret, _, err := p.Call(
 		uintptr(oldValue))
 
-	if strings.Contains(err.Error(), "successfully") == false {
-		log.Printf("ret: %#+v\n", ret)
+	if ret == 0 {
 		log.Printf("err: %#+v\n", err.Error())
 		return
 	}
