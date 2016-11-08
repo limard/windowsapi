@@ -1,55 +1,74 @@
 package redirection
 
 import (
-	"log"
 	"syscall"
 	"unsafe"
+
+	"bitbucket.org/Limard/win/osinfo"
+
+	"log"
+)
+
+var (
+	dKernel32                       = syscall.NewLazyDLL("Kernel32.dll")
+	pWow64DisableWow64FsRedirection = dKernel32.NewProc("Wow64DisableWow64FsRedirection")
+	pWow64EnableWow64FsRedirection  = dKernel32.NewProc("Wow64EnableWow64FsRedirection")
+	pWow64RevertWow64FsRedirection  = dKernel32.NewProc("Wow64RevertWow64FsRedirection")
 )
 
 // Wow64DisableWow64FsRedirection ...
-func Wow64DisableWow64FsRedirection() (oldvalue int, err error) {
-	d := syscall.NewLazyDLL("Kernel32.dll")
-	p := d.NewProc("Wow64DisableWow64FsRedirection")
-
-	ret, _, err := p.Call(
-		uintptr(unsafe.Pointer(&oldvalue)))
-
-	if ret == 0 {
-		log.Printf("err: %#+v\n", err.Error())
+func Wow64DisableWow64FsRedirection() (oldvalue uintptr, err error) {
+	if err = pWow64DisableWow64FsRedirection.Find(); err != nil {
 		return
 	}
 
-	return
+	if osinfo.Is64bitOS() == false {
+		return oldvalue, nil
+	}
+
+	ret, _, err := pWow64DisableWow64FsRedirection.Call(uintptr(unsafe.Pointer(&oldvalue)))
+	if ret == 0 {
+		log.Println("ERROR (Wow64DisableWow64FsRedirection):", err.Error())
+		return
+	}
+
+	return oldvalue, nil
 }
 
 // Wow64EnableWow64FsRedirection ...
-func Wow64EnableWow64FsRedirection(enable int) (err error) {
-	d := syscall.NewLazyDLL("Kernel32.dll")
-	p := d.NewProc("Wow64EnableWow64FsRedirection")
-
-	ret, _, err := p.Call(
-		uintptr(enable))
-
-	if ret == 0 {
-		log.Printf("err: %#+v\n", err.Error())
+func Wow64EnableWow64FsRedirection(enable uint) (err error) {
+	if err = pWow64EnableWow64FsRedirection.Find(); err != nil {
 		return
 	}
 
-	return
+	if osinfo.Is64bitOS() == false {
+		return nil
+	}
+
+	ret, _, err := pWow64EnableWow64FsRedirection.Call(uintptr(enable))
+	if ret == 0 {
+		log.Println("ERROR (Wow64EnableWow64FsRedirection):", err.Error())
+		return
+	}
+
+	return nil
 }
 
 // Wow64RevertWow64FsRedirection ...
-func Wow64RevertWow64FsRedirection(oldValue int) (err error) {
-	d := syscall.NewLazyDLL("Kernel32.dll")
-	p := d.NewProc("Wow64RevertWow64FsRedirection")
-
-	ret, _, err := p.Call(
-		uintptr(oldValue))
-
-	if ret == 0 {
-		log.Printf("err: %#+v\n", err.Error())
+func Wow64RevertWow64FsRedirection(oldValue uintptr) (err error) {
+	if err = pWow64RevertWow64FsRedirection.Find(); err != nil {
 		return
 	}
 
-	return
+	// if osinfo.Is64bitOS() == false {
+	// 	return nil
+	// }
+
+	ret, _, err := pWow64RevertWow64FsRedirection.Call(oldValue)
+	if ret == 0 {
+		log.Println("ERROR (Wow64RevertWow64FsRedirection):", err.Error())
+		return
+	}
+
+	return nil
 }
