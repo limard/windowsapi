@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	dshell32          = syscall.NewLazyDLL("Shell32.dll")
-	pSHGetFolderPathW = dshell32.NewProc("SHGetFolderPathW")
+	dshell32                = syscall.NewLazyDLL("Shell32.dll")
+	pSHGetFolderPathW       = dshell32.NewProc("SHGetFolderPathW")
+	pSHGetSpecialFolderPath = dshell32.NewProc("SHGetSpecialFolderPathW")
 
 	dkernel32            = syscall.NewLazyDLL("Kernel32.dll")
 	pGetSystemDirectoryW = dkernel32.NewProc("GetSystemDirectoryW")
@@ -102,75 +103,94 @@ func GetSystemDirectory() (path string) {
 
 ////////////////////////////////////////////////////////
 
-func shGetFolderPath(nFolder int) string {
+func shGetFolderPath(nFolder int) (string, error) {
 	if err := pSHGetFolderPathW.Find(); err != nil {
-		log.Println("ERROR", err.Error())
-		return ""
+		return "", err
 	}
 
 	pt := make([]uint16, syscall.MAX_PATH)
-	ret, _, err := pSHGetFolderPathW.Call(uintptr(0), uintptr(nFolder), uintptr(0), uintptr(0), uintptr(unsafe.Pointer(&pt[0])))
+	ret, _, err := pSHGetFolderPathW.Call(
+		uintptr(0),
+		uintptr(nFolder),
+		uintptr(0), // token
+		uintptr(0), // dwFlags
+		uintptr(unsafe.Pointer(&pt[0])))
 	if ret == 0 {
-		if err.Error() != "An attempt was made to reference a token that does not exist." {
-			log.Println("ERROR:", err.Error())
-		}
+		// err = nil
 	}
 
-	return syscall.UTF16ToString(pt)
+	return syscall.UTF16ToString(pt), err
 }
 
-// C:\Documents and Settings\All Users\Application Data
-func GetCommmonAppDataDirectory() string {
-	return shGetFolderPath(win.CSIDL_COMMON_APPDATA)
+func shGetSpecialFolderPath(nFolder int) (string, error) {
+	if err := pSHGetSpecialFolderPath.Find(); err != nil {
+		return "", err
+	}
+	pt := make([]uint16, syscall.MAX_PATH)
+	ret, _, err := pSHGetSpecialFolderPath.Call(
+		uintptr(0),
+		uintptr(unsafe.Pointer(&pt[0])),
+		uintptr(nFolder),
+		uintptr(1))
+	if ret != 0 {
+		err = nil
+	}
+
+	return syscall.UTF16ToString(pt), err
+}
+
+// "C:\Documents and Settings\All Users\Application Data" or "C:\ProgramData"
+func GetCommmonAppDataDirectory() (string, error) {
+	return shGetSpecialFolderPath(win.CSIDL_COMMON_APPDATA)
 }
 
 // // C:\Documents and Settings\...\Desktop
-func GetDesktopDir() string {
+func GetDesktopDir() (string, error) {
 	return shGetFolderPath(win.CSIDL_DESKTOP)
 }
 
 // C:\Documents and Settings\All Users\Desktop
-func GetCommonDesktopDir() string {
+func GetCommonDesktopDir() (string, error) {
 	return shGetFolderPath(win.CSIDL_COMMON_DESKTOPDIRECTORY)
 }
 
 // C:\Windows
-func GetWindowsDir() string {
+func GetWindowsDir() (string, error) {
 	return shGetFolderPath(win.CSIDL_WINDOWS)
 }
 
 // C:\Windows\System32
-func GetSystemDir() string {
+func GetSystemDir() (string, error) {
 	return shGetFolderPath(win.CSIDL_SYSTEM)
 }
 
 // C:\Windows\SysWOW64
-func GetSystem86Dir() string {
+func GetSystem86Dir() (string, error) {
 	return shGetFolderPath(win.CSIDL_SYSTEMX86)
 }
 
 // C:\Program Files
-func GetProgramFilesDir() string {
+func GetProgramFilesDir() (string, error) {
 	return shGetFolderPath(win.CSIDL_PROGRAM_FILES)
 }
 
 // C:\Program Files (x86)
-func GetProgramFiles86Dir() string {
+func GetProgramFiles86Dir() (string, error) {
 	return shGetFolderPath(win.CSIDL_PROGRAM_FILESX86)
 }
 
 //  C:\Documents and Settings\username\Templates
-func GetUserTempSystemDir() string {
+func GetUserTempSystemDir() (string, error) {
 	return shGetFolderPath(win.CSIDL_TEMPLATES)
 }
 
 // C:\Program Files\Common
-func GetProgramFilesCommonDir() string {
+func GetProgramFilesCommonDir() (string, error) {
 	return shGetFolderPath(win.CSIDL_PROGRAM_FILES_COMMON)
 }
 
 // C:\Program Files (x86)\Common
-func GetProgramFilesCommon86Dir() string {
+func GetProgramFilesCommon86Dir() (string, error) {
 	return shGetFolderPath(win.CSIDL_PROGRAM_FILES_COMMONX86)
 }
 

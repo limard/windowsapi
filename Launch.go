@@ -124,35 +124,35 @@ func LaunchInActiveSesstion(cmd string) (pid int, handle uintptr, err error) {
 
 	hToken, err = wtsQueryUserToken(sesstionId)
 	if err != nil {
-		logx.Println("WTSQueryUserToken", err)
+		logx.Println("WTSQueryUserToken:", err)
 		goto Exit
 	}
 	defer hToken.Close()
 
 	err = enableAllPrivileges(hToken)
 	if err != nil {
-		logx.Println("EnableAllPrivileges", err)
+		logx.Println("EnableAllPrivileges:", err)
 		// goto Exit
 	}
 
 	// if (DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL, SecurityImpersonation, TokenPrimary, &hNewToken) == FALSE)
 	hNewToken, err = DuplicateTokenEx(hToken, syscall.TOKEN_ALL_ACCESS)
 	if err != nil {
-		logx.Println("DuplicateTokenEx", err)
+		logx.Println("DuplicateTokenEx:", err)
 		goto Exit
 	}
 
 	// if (SetTokenInformation(hNewToken, TokenSessionId, &sesstionId, sizeof(sesstionId)) == FALSE)
 	err = SetTokenInformation(hNewToken, TokenSessionId, &sesstionId, 4)
 	if err != nil {
-		logx.Println("SetTokenInformation", err)
+		logx.Println("SetTokenInformation:", err)
 		goto Exit
 	}
 
 	// if (CreateEnvironmentBlock(&lpEnvironment, hToken, FALSE) == FALSE)
 	lpEnvironment, err = CreateEnvironmentBlock(hToken, false)
 	if err != nil {
-		logx.Println("CreateEnvironmentBlock", err)
+		logx.Println("CreateEnvironmentBlock:", err)
 		goto Exit
 	}
 
@@ -171,7 +171,7 @@ func LaunchInActiveSesstion(cmd string) (pid int, handle uintptr, err error) {
 	err = CreateProcessAsUser(hNewToken, cmd, nil, nil, false,
 		syscall.CREATE_UNICODE_ENVIRONMENT, lpEnvironment, nil, si, pi)
 	if err != nil {
-		logx.Println("CreateProcessAsUser", err)
+		logx.Println("CreateProcessAsUser:", err)
 		goto Exit
 	}
 
