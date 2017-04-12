@@ -1,7 +1,6 @@
 package systempath
 
 import (
-	"log"
 	"syscall"
 	"unsafe"
 
@@ -25,7 +24,7 @@ var (
 ////////////////////////////////////////////////////////
 
 // GetPrintProcessorDirectory is used for get print processor directory
-func GetPrintProcessorDirectory(platform string) (path string) {
+func GetPrintProcessorDirectory(platform string) (path string, err error) {
 	pt := make([]uint16, syscall.MAX_PATH)
 	num := 0
 	ret, _, err := pGetPrintProcessorDirectoryW.Call(
@@ -35,30 +34,27 @@ func GetPrintProcessorDirectory(platform string) (path string) {
 		uintptr(unsafe.Pointer(&pt[0])),
 		uintptr(256),
 		uintptr(unsafe.Pointer(&num)))
-	if ret == 0 {
-		if err.Error() != "An attempt was made to reference a token that does not exist." {
-			log.Println("ERROR:", err.Error())
-		}
-		return path
+	if ret != 0 {
+		err = nil
 	}
 
-	return syscall.UTF16ToString(pt)
+	return syscall.UTF16ToString(pt), err
 }
 
 // C:\Windows\System32\spool\prtprocs\x64
-func GetPrintProcessorDirectory64() (path string) {
+func GetPrintProcessorDirectory64() (path string, err error) {
 	return GetPrintProcessorDirectory("Windows x64")
 }
 
 // C:\Windows\System32\spool\prtprocs\x86
-func GetPrintProcessorDirectory86() (path string) {
+func GetPrintProcessorDirectory86() (path string, err error) {
 	return GetPrintProcessorDirectory("Windows NT x86")
 }
 
 ////////////////////////////////////////////////////////
 
 // GetPrinterDriverDirectory ...
-func GetPrinterDriverDirectory(platform string) (path string) {
+func GetPrinterDriverDirectory(platform string) (path string, err error) {
 	pt := make([]uint16, syscall.MAX_PATH)
 	num := 0
 	ret, _, err := pGetPrinterDriverDirectoryW.Call(
@@ -68,37 +64,33 @@ func GetPrinterDriverDirectory(platform string) (path string) {
 		uintptr(unsafe.Pointer(&pt[0])),
 		uintptr(256),
 		uintptr(unsafe.Pointer(&num)))
-	if ret == 0 {
-		if err.Error() != "An attempt was made to reference a token that does not exist." {
-			log.Println("ERROR:", err.Error())
-		}
-		return path
+	if ret != 0 {
+		err = nil
 	}
 
-	return syscall.UTF16ToString(pt)
+	return syscall.UTF16ToString(pt), err
 }
 
-func GetPrinterDriverDirectory64() (path string) {
+func GetPrinterDriverDirectory64() (path string, err error) {
 	return GetPrinterDriverDirectory("Windows x64")
 }
 
-func GetPrinterDriverDirectory86() (path string) {
+func GetPrinterDriverDirectory86() (path string, err error) {
 	return GetPrinterDriverDirectory("Windows NT x86")
 }
 
 ////////////////////////////////////////////////////////
 
-// GetSystemDirectory ...
-func GetSystemDirectory() (path string) {
+// GetSystemDirectory get C:\Windows\System32
+func GetSystemDirectory() (path string, err error) {
 	pt := make([]uint16, syscall.MAX_PATH)
 	num := 0
 	ret, _, err := pGetSystemDirectoryW.Call(uintptr(unsafe.Pointer(&pt[0])), uintptr(unsafe.Pointer(&num)))
-	if ret == 0 {
-		log.Println("ERROR:", err)
-		return path
+	if ret != 0 {
+		err = nil
 	}
 
-	return syscall.UTF16ToString(pt)
+	return syscall.UTF16ToString(pt), err
 }
 
 ////////////////////////////////////////////////////////
@@ -194,12 +186,12 @@ func GetProgramFilesCommon86Dir() (string, error) {
 	return shGetFolderPath(win.CSIDL_PROGRAM_FILES_COMMONX86)
 }
 
-func GetTempDir() string {
+func GetTempPath() (string, error) {
 	pt := make([]uint16, syscall.MAX_PATH)
 	ret, _, err := pGetTempPathW.Call(syscall.MAX_PATH, uintptr(unsafe.Pointer(&pt[0])))
-	if ret == 0 {
-		log.Println("ERROR", err)
+	if ret != 0 {
+		err = nil
 	}
 
-	return syscall.UTF16ToString(pt)
+	return syscall.UTF16ToString(pt), err
 }

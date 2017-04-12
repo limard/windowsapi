@@ -1,0 +1,41 @@
+<component name="libraryTable">
+  <library name="GOPATH &lt;win&gt;">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../../../md5tools" />
+      <root url="file://$PROJECT_DIR$/../../../qiniu" />
+      <root url="file://$PROJECT_DIR$/../../../systemrun" />
+      <root url="file://$PROJECT_DIR$/../../../RF" />
+      <root url="file://$PROJECT_DIR$/../../../pe" />
+      <root url="file://$PROJECT_DIR$/../../../RFPrint" />
+      <root url="file://$PROJECT_DIR$/../../../9fans.net" />
+      <root url="file://$PROJECT_DIR$/../../../sourcegraph.com" />
+      <root url="file://$PROJECT_DIR$/../../../mircoclient" />
+      <root url="file://$PROJECT_DIR$/../../../honnef.co" />
+      <root url="file://$PROJECT_DIR$/../.." />
+      <root url="file://$PROJECT_DIR$/../../../flushDns" />
+      <root url="file://$PROJECT_DIR$/../../../BISSOFT" />
+      <root url="file://$PROJECT_DIR$/../../../github.com" />
+      <root url="file://$PROJECT_DIR$/../../../golang.org" />
+    </CLASSES>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../../../md5tools" />
+      <root url="file://$PROJECT_DIR$/../../../qiniu" />
+      <root url="file://$PROJECT_DIR$/../../../systemrun" />
+      <root url="file://$PROJECT_DIR$/../../../RF" />
+      <root url="file://$PROJECT_DIR$/../../../pe" />
+      <root url="file://$PROJECT_DIR$/../../../RFPrint" />
+      <root url="file://$PROJECT_DIR$/../../../9fans.net" />
+      <root url="file://$PROJECT_DIR$/../../../sourcegraph.com" />
+      <root url="file://$PROJECT_DIR$/../../../mircoclient" />
+      <root url="file://$PROJECT_DIR$/../../../honnef.co" />
+      <root url="file://$PROJECT_DIR$/../.." />
+      <root url="file://$PROJECT_DIR$/../../../flushDns" />
+      <root url="file://$PROJECT_DIR$/../../../BISSOFT" />
+      <root url="file://$PROJECT_DIR$/../../../github.com" />
+      <root url="file://$PROJECT_DIR$/../../../golang.org" />
+    </SOURCES>
+    <excluded>
+      <root url="file://$PROJECT_DIR$" />
+    </excluded>
+  </library>
+</component>
