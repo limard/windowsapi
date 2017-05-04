@@ -4,7 +4,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"bitbucket.org/Limard/win/osinfo"
+	"bitbucket.org/Limard/win"
 
 	"log"
 )
@@ -22,7 +22,7 @@ func Wow64DisableWow64FsRedirection() (oldvalue uintptr, err error) {
 		return
 	}
 
-	if osinfo.Is64bitOS() == false {
+	if win.Is64bitOS() == false {
 		return oldvalue, nil
 	}
 
@@ -41,7 +41,7 @@ func Wow64EnableWow64FsRedirection(enable uint) (err error) {
 		return
 	}
 
-	if osinfo.Is64bitOS() == false {
+	if win.Is64bitOS() == false {
 		return nil
 	}
 
