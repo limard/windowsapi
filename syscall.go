@@ -294,7 +294,7 @@ func wtsEnumerateSessionsEx(server syscall.Handle) ([]wtsSessionInfo1, error) {
 	return rt, nil
 }
 
-func wtsQueryUserToken(sessionID uint32) (hd syscall.Token, err error) {
+func WTSQueryUserToken(sessionID uint32) (hd syscall.Token, err error) {
 	proc, err := loadProc("Wtsapi32.dll", "WTSQueryUserToken")
 	if err != nil {
 		return

@@ -122,7 +122,7 @@ func LaunchInActiveSesstion(cmd string) (pid int, handle uintptr, err error) {
 	// }
 	// defer hToken.Close()
 
-	hToken, err = wtsQueryUserToken(sesstionId)
+	hToken, err = WTSQueryUserToken(sesstionId)
 	if err != nil {
 		logx.Println("WTSQueryUserToken:", err)
 		goto Exit

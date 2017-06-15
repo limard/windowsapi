@@ -131,7 +131,17 @@ func shGetSpecialFolderPath(nFolder int) (string, error) {
 	return syscall.UTF16ToString(pt), err
 }
 
-// "C:\Documents and Settings\All Users\Application Data" or "C:\ProgramData"
+// CSIDL_APPDATA: C:\Documents and Settings\username\Application Data
+func GetAppDataDirectory() (string, error) {
+	return shGetSpecialFolderPath(win.CSIDL_APPDATA)
+}
+
+// CSIDL_LOCAL_APPDATA: C:\Documents and Settings\username\Local Settings\Application Data.
+func GetLocalAppDataDirectory() (string, error) {
+	return shGetSpecialFolderPath(win.CSIDL_LOCAL_APPDATA)
+}
+
+// CSIDL_COMMON_APPDATA: "C:\Documents and Settings\All Users\Application Data" or "C:\ProgramData"
 func GetCommmonAppDataDirectory() (string, error) {
 	return shGetSpecialFolderPath(win.CSIDL_COMMON_APPDATA)
 }
