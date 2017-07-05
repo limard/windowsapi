@@ -1,4 +1,4 @@
-package win
+package windowsapi
 
 import "testing"
 
@@ -10,9 +10,9 @@ func TestGetOSVersion(t *testing.T) {
 func TestGetOSVersion2(t *testing.T) {
 	//t.Log(equalOSVersion(5,1))
 
-	t.Log(equalOSVersion(6,0))
-	t.Log(equalOSVersion(6,1))
-	t.Log(equalOSVersion(6,2))
+	t.Log(equalOSVersion(6, 0))
+	t.Log(equalOSVersion(6, 1))
+	t.Log(equalOSVersion(6, 2))
 
 	//t.Log(GetOSVersion2(7,0, 0,0))
 	//t.Log(GetOSVersion2(7,1, 0,0))

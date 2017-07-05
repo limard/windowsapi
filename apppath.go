@@ -1,20 +1,12 @@
-package apppath
+// +build windows
+
+package windowsapi
 
 import (
 	"os"
 	"os/exec"
 	"path/filepath"
 )
-
-// func GetAppPath() string {
-// 	lp, _ := exec.LookPath(os.Args[0])
-// 	p, err := filepath.Abs(lp)
-// 	if err != nil {
-// 		p = os.Args[0]
-// 	}
-// 	dir := filepath.Dir(p)
-// 	return dir
-// }
 
 func GetAppDir() string {
 	lp, _ := exec.LookPath(os.Args[0])

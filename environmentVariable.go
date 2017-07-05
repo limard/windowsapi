@@ -1,41 +1,22 @@
-// +build windows
-
-package win
+package windowsapi
 
 import (
-"os"
-"strings"
-"syscall"
-"unsafe"
+	"os"
+	"strings"
+	"syscall"
+	"unsafe"
 
-"golang.org/x/sys/windows/registry"
-)
-
-const (
-	HWND_BROADCAST   uintptr = 0xffff
-	WM_SETTINGCHANGE uint    = 0x1a
-)
-
-// SendMessageTimeout Flags
-// https://msdn.microsoft.com/en-us/library/windows/desktop/ms644952(v=vs.85).aspx
-const (
-	SMTO_ABORTIFHUNG        = 0x0002
-	SMTO_BLOCK              = 0x0001
-	SMTO_NORMAL             = 0x0000
-	SMTO_NOTIMEOUTIFNOTHUNG = 0x0008
-	SMTO_ERRORONEXIT        = 0x0020
+	"golang.org/x/sys/windows/registry"
 )
 
 var (
-	libUser32         = syscall.NewLazyDLL("user32.dll")
 	pathRegKey string = "Path"
 )
 
 func BroadcastSettingChange() {
 	rawParam, _ := syscall.UTF16PtrFromString("ENVIRONMENT")
 	param := uintptr(unsafe.Pointer(rawParam))
-	sendMessageProcedure := libUser32.NewProc("SendMessageTimeoutW")
-	sendMessageProcedure.Call(uintptr(HWND_BROADCAST), uintptr(WM_SETTINGCHANGE), 0, param,
+	pSendMessageTimeout.Call(uintptr(HWND_BROADCAST), uintptr(WM_SETTINGCHANGE), 0, param,
 		uintptr(SMTO_ABORTIFHUNG), uintptr(5000), uintptr(0))
 }
 

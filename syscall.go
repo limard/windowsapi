@@ -1,4 +1,6 @@
-package win
+// +build windows
+
+package windowsapi
 
 import (
 	"syscall"
@@ -310,12 +312,7 @@ func WTSQueryUserToken(sessionID uint32) (hd syscall.Token, err error) {
 }
 
 func WTSGetActiveConsoleSessionId() (sessionId uint32, err error) {
-	proc, err := loadProc("kernel32.dll", "WTSGetActiveConsoleSessionId")
-	if err != nil {
-		return
-	}
-
-	r1, _, err := proc.Call()
+	r1, _, err := pWTSGetActiveConsoleSessionId.Call()
 	if r1 == 0xFFFFFFFF {
 		return
 	}

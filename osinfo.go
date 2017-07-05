@@ -1,11 +1,12 @@
-package win
+// +build windows
+
+package windowsapi
 
 import (
 	"errors"
 	"fmt"
 	"syscall"
 	"unsafe"
-	//"log"
 )
 
 type SSystemInfo struct {
@@ -22,25 +23,14 @@ type SSystemInfo struct {
 	wProcessorRevision          uint16
 }
 
-const (
-	PROCESSOR_ARCHITECTURE_AMD64   = 9
-	PROCESSOR_ARCHITECTURE_ARM     = 5
-	PROCESSOR_ARCHITECTURE_IA64    = 6
-	PROCESSOR_ARCHITECTURE_INTEL   = 0
-	PROCESSOR_ARCHITECTURE_UNKNOWN = 0xffff
-)
-
 func Is64bitOS() bool {
-	d := syscall.NewLazyDLL("kernel32.dll")
-	p := d.NewProc("GetNativeSystemInfo")
-
-	if err := p.Find(); err != nil {
+	if err := pGetNativeSystemInfo.Find(); err != nil {
 		return false
 	}
 
 	var info = SSystemInfo{}
 
-	ret, _, _ := p.Call(uintptr(unsafe.Pointer(&info)))
+	ret, _, _ := pGetNativeSystemInfo.Call(uintptr(unsafe.Pointer(&info)))
 	if ret == 0 {
 		return false
 	}
@@ -106,14 +96,11 @@ const (
 
 func getOSVersion_back() (string, uint32, uint32) {
 	var version string = "Unknown Version"
-	kernel32 := syscall.NewLazyDLL("kernel32.dll")
 
 	var os OSVERSIONINFOEX
 	os.dwOSVersionInfoSize = uint32(unsafe.Sizeof(os))
 
-	GetVersionExW := kernel32.NewProc("GetVersionExW")
-
-	rt, _, _ := GetVersionExW.Call(uintptr(unsafe.Pointer(&os)))
+	rt, _, _ := pGetVersionExW.Call(uintptr(unsafe.Pointer(&os)))
 	if int(rt) == 1 {
 		switch {
 		// 4
@@ -188,13 +175,10 @@ func getOSVersion_back() (string, uint32, uint32) {
 func GetOSVersion() (string, uint32, uint32) {
 	var version string = "Unknown Version"
 
-	kernel32 := syscall.NewLazyDLL("kernel32.dll")
-
 	var os OSVERSIONINFOEX
 	os.dwOSVersionInfoSize = uint32(unsafe.Sizeof(os))
 
-	GetVersionExW := kernel32.NewProc("GetVersionExW")
-	rt, _, _ := GetVersionExW.Call(uintptr(unsafe.Pointer(&os)))
+	rt, _, _ := pGetVersionExW.Call(uintptr(unsafe.Pointer(&os)))
 	if rt == 0 {
 		return "Unknown Version", 0, 0
 	}
@@ -252,12 +236,9 @@ func GetOSVersion() (string, uint32, uint32) {
 }
 
 func equalOSVersion(dwMajorVersion, dwMinorVersion uint32) (bool, error) {
-	d := syscall.NewLazyDLL("kernel32.dll")
-
 	var m1, m2 uintptr
-	VerSetConditionMask := d.NewProc("VerSetConditionMask")
-	m1, m2, _ = VerSetConditionMask.Call(m1, m2, VER_MAJORVERSION, VER_EQUAL)
-	m1, m2, _ = VerSetConditionMask.Call(m1, m2, VER_MINORVERSION, VER_EQUAL)
+	m1, m2, _ = pVerSetConditionMask.Call(m1, m2, VER_MAJORVERSION, VER_EQUAL)
+	m1, m2, _ = pVerSetConditionMask.Call(m1, m2, VER_MINORVERSION, VER_EQUAL)
 
 	//log.Printf("%#v%#v", m1, m2)
 
@@ -266,7 +247,7 @@ func equalOSVersion(dwMajorVersion, dwMinorVersion uint32) (bool, error) {
 		dwMinorVersion: dwMinorVersion,
 	}
 	vi.dwOSVersionInfoSize = uint32(unsafe.Sizeof(vi))
-	r, _, e1 := d.NewProc("VerifyVersionInfoW").Call(
+	r, _, e1 := pVerifyVersionInfo.Call(
 		uintptr(unsafe.Pointer(&vi)),
 		VER_MAJORVERSION|VER_MINORVERSION,
 		m1, m2)
@@ -282,13 +263,10 @@ func equalOSVersion(dwMajorVersion, dwMinorVersion uint32) (bool, error) {
 }
 
 func isOSWorkstation() (bool, error) {
-	d := syscall.NewLazyDLL("kernel32.dll")
-
 	var m1, m2 uintptr
-	VerSetConditionMask := d.NewProc("VerSetConditionMask")
-	m1, m2, _ = VerSetConditionMask.Call(m1, m2, VER_MAJORVERSION, VER_EQUAL)
-	m1, m2, _ = VerSetConditionMask.Call(m1, m2, VER_MINORVERSION, VER_EQUAL)
-	m1, m2, _ = VerSetConditionMask.Call(m1, m2, VER_PRODUCT_TYPE, VER_EQUAL)
+	m1, m2, _ = pVerSetConditionMask.Call(m1, m2, VER_MAJORVERSION, VER_EQUAL)
+	m1, m2, _ = pVerSetConditionMask.Call(m1, m2, VER_MINORVERSION, VER_EQUAL)
+	m1, m2, _ = pVerSetConditionMask.Call(m1, m2, VER_PRODUCT_TYPE, VER_EQUAL)
 
 	//log.Printf("%#v", unsafe.Sizeof(m1))
 	//log.Printf("%#v%#v", m1, m2)
@@ -302,7 +280,7 @@ func isOSWorkstation() (bool, error) {
 
 	//log.Printf("%#v", vi)
 
-	r, _, e1 := d.NewProc("VerifyVersionInfoW").Call(
+	r, _, e1 := pVerifyVersionInfo.Call(
 		uintptr(unsafe.Pointer(&vi)),
 		//VER_PRODUCT_TYPE|
 		VER_MAJORVERSION|
@@ -320,12 +298,10 @@ func isOSWorkstation() (bool, error) {
 }
 
 func rtlGetVersion() (uint32, uint32, error) {
-	dll := syscall.NewLazyDLL("ntdll.dll")
-	proc := dll.NewProc("RtlGetVersion")
 	info := &OSVERSIONINFO{}
 	info.dwOSVersionInfoSize = uint32(unsafe.Sizeof(info))
 
-	ret, _, err := proc.Call(uintptr(unsafe.Pointer(info)))
+	ret, _, err := pRtlGetVersion.Call(uintptr(unsafe.Pointer(info)))
 	if ret > 0xC0000000 {
 		fmt.Println(errors.New("RtlGetVersion failed: " + err.Error()))
 	}
