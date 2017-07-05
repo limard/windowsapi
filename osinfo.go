@@ -3,7 +3,6 @@
 package windowsapi
 
 import (
-	"errors"
 	"fmt"
 	"syscall"
 	"unsafe"
@@ -45,16 +44,6 @@ func Is64bitOS() bool {
 }
 
 // Windows version
-
-type OSVERSIONINFO struct {
-	dwOSVersionInfoSize uint32
-	dwMajorVersion      uint32
-	dwMinorVersion      uint32
-	dwBuildNumber       uint32
-	dwPlatformId        uint32
-	szCSDVersion        [128]uint16
-}
-
 type OSVERSIONINFOEX struct {
 	dwOSVersionInfoSize uint32
 	dwMajorVersion      uint32
@@ -183,7 +172,9 @@ func GetOSVersion() (string, uint32, uint32) {
 		return "Unknown Version", 0, 0
 	}
 
-	os.dwMajorVersion, os.dwMinorVersion, _ = rtlGetVersion()
+	info, _ := RtlGetVersion()
+	os.dwMajorVersion = info.dwMajorVersion
+	os.dwMinorVersion = info.dwMinorVersion
 
 	switch {
 	// 4
@@ -295,15 +286,4 @@ func isOSWorkstation() (bool, error) {
 	}
 
 	return false, fmt.Errorf("VerifyVersionInfo failed: %s", e1)
-}
-
-func rtlGetVersion() (uint32, uint32, error) {
-	info := &OSVERSIONINFO{}
-	info.dwOSVersionInfoSize = uint32(unsafe.Sizeof(info))
-
-	ret, _, err := pRtlGetVersion.Call(uintptr(unsafe.Pointer(info)))
-	if ret > 0xC0000000 {
-		fmt.Println(errors.New("RtlGetVersion failed: " + err.Error()))
-	}
-	return info.dwMajorVersion, info.dwMinorVersion, nil
 }

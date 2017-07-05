@@ -3,7 +3,7 @@ package windowsapi
 import "syscall"
 
 var (
-	dUser32         = syscall.NewLazyDLL("user32.dll")
+	dUser32 = syscall.NewLazyDLL("user32.dll")
 
 	pSendMessageTimeout = dUser32.NewProc("SendMessageTimeoutW")
 )

@@ -30,7 +30,6 @@ func loadProc(dllName string, procName string) (*syscall.Proc, error) {
 	return dll.FindProc(procName)
 }
 
-
 const (
 	DEBUG_PROCESS                    = 0x00000001
 	DEBUG_ONLY_THIS_PROCESS          = 0x00000002

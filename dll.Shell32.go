@@ -1,10 +1,14 @@
 package windowsapi
 
-import "syscall"
+import (
+	"syscall"
+	"unsafe"
+)
 
 var (
-	dshell32                = syscall.NewLazyDLL("Shell32.dll")
-	pSHGetFolderPathW       = dshell32.NewProc("SHGetFolderPathW")
+	dshell32 = syscall.NewLazyDLL("Shell32.dll")
+
+	pSHGetFolderPath        = dshell32.NewProc("SHGetFolderPathW")
 	pSHGetSpecialFolderPath = dshell32.NewProc("SHGetSpecialFolderPathW")
 )
 
@@ -72,3 +76,39 @@ const (
 	CSIDL_FLAG_PER_USER_INIT      = 0x8000
 	CSIDL_FLAG_MASK               = 0xFF00
 )
+
+func SHGetFolderPath(nFolder int) (string, error) {
+	if err := pSHGetFolderPath.Find(); err != nil {
+		return "", err
+	}
+
+	pt := make([]uint16, syscall.MAX_PATH)
+	ret, _, err := pSHGetFolderPath.Call(
+		uintptr(0),
+		uintptr(nFolder),
+		uintptr(0), // token
+		uintptr(0), // dwFlags
+		uintptr(unsafe.Pointer(&pt[0])))
+	if ret == 0 {
+		// err = nil
+	}
+
+	return syscall.UTF16ToString(pt), err
+}
+
+func SHGetSpecialFolderPath(nFolder int) (string, error) {
+	if err := pSHGetSpecialFolderPath.Find(); err != nil {
+		return "", err
+	}
+	pt := make([]uint16, syscall.MAX_PATH)
+	ret, _, err := pSHGetSpecialFolderPath.Call(
+		uintptr(0),
+		uintptr(unsafe.Pointer(&pt[0])),
+		uintptr(nFolder),
+		uintptr(1))
+	if ret != 0 {
+		err = nil
+	}
+
+	return syscall.UTF16ToString(pt), err
+}

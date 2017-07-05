@@ -1,3 +1,5 @@
+// +build windows
+
 package windowsapi
 
 import (
@@ -6,10 +8,19 @@ import (
 )
 
 var (
-	dAdvapi32             = syscall.NewLazyDLL("advapi32.dll")
+	dAdvapi32 = syscall.NewLazyDLL("advapi32.dll")
 
 	pDuplicateTokenEx    = dAdvapi32.NewProc("DuplicateTokenEx")
 	pSetTokenInformation = dAdvapi32.NewProc("SetTokenInformation")
+)
+
+const (
+	SecurityAnonymous      = 0
+	SecurityIdentification = 1
+	SecurityImpersonation  = 2
+	SecurityDelegation     = 3
+
+	TokenPrimary = 1
 )
 
 const (
