@@ -85,3 +85,116 @@ func SetTokenInformation(TokenHandle syscall.Token, TokenSessionId int, TokenInf
 	}
 	return nil
 }
+
+func CreateProcessAsUser(
+	token syscall.Token,
+// applicationName string,
+	cmd string,
+	procSecurity *syscall.SecurityAttributes,
+	threadSecurity *syscall.SecurityAttributes,
+	inheritHandles bool,
+	creationFlags uint32,
+	environment *uint16,
+	currentDir *uint16,
+	startupInfo *syscall.StartupInfo,
+	outProcInfo *syscall.ProcessInformation,
+) error {
+	proc, err := loadProc("advapi32.dll", "CreateProcessAsUserW")
+	if err != nil {
+		return err
+	}
+
+	iInheritHandles := 0
+	if inheritHandles {
+		iInheritHandles = 1
+	}
+
+	r1, _, err := proc.Call(
+		uintptr(token),
+		// uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(applicationName))),
+		uintptr(0),
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(cmd))),
+		uintptr(unsafe.Pointer(procSecurity)),
+		uintptr(unsafe.Pointer(threadSecurity)),
+		uintptr(iInheritHandles),
+		uintptr(creationFlags),
+		uintptr(unsafe.Pointer(environment)),
+		uintptr(unsafe.Pointer(currentDir)),
+		uintptr(unsafe.Pointer(startupInfo)),
+		uintptr(unsafe.Pointer(outProcInfo)),
+	)
+
+	if r1 == 1 {
+		return nil
+	}
+	return err
+}
+
+type luid struct {
+	lowPart  uint32
+	highPart uint32
+}
+
+func LookupPrivilegeValue(systemName string, name string) (*luid, error) {
+	proc, err := loadProc("advapi32.dll", "LookupPrivilegeValueW")
+	if err != nil {
+		return nil, err
+	}
+
+	l := luid{}
+
+	wsSystemName := uintptr(0)
+	if len(systemName) > 0 {
+		wsSystemName = uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(systemName)))
+	}
+
+	r1, _, err := proc.Call(
+		wsSystemName,
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(name))),
+		uintptr(unsafe.Pointer(&l)),
+	)
+	if r1 == 1 {
+		return &l, nil
+	}
+	return nil, err
+}
+
+type luidAndAttributes struct {
+	luid       luid
+	attributes uint32
+}
+
+type tokenPrivileges struct {
+	privilegeCount uint32
+	privileges     *luidAndAttributes
+}
+
+func AdjustTokenPrivileges(token syscall.Token, uid luid) error {
+	proc, err := loadProc("advapi32.dll", "AdjustTokenPrivileges")
+	if err != nil {
+		return err
+	}
+
+	var sePrivilegeEnabled = uint32(0x00000002)
+
+	newState := tokenPrivileges{
+		privilegeCount: 1,
+		privileges: &luidAndAttributes{
+			luid:       uid,
+			attributes: sePrivilegeEnabled,
+		},
+	}
+
+	r1, _, err := proc.Call(
+		uintptr(token),
+		uintptr(0),
+		uintptr(unsafe.Pointer(&newState)),
+		uintptr(unsafe.Sizeof(newState)),
+		uintptr(0),
+		uintptr(0),
+	)
+	if r1 == 1 {
+		return nil
+	}
+	return err
+}
