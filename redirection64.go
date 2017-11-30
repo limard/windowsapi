@@ -18,7 +18,7 @@ func Wow64DisableWow64FsRedirection() (oldvalue uintptr, err error) {
 
 	ret, _, err := pWow64DisableWow64FsRedirection.Call(uintptr(unsafe.Pointer(&oldvalue)))
 	if ret == 0 {
-		log.Println("ERROR (Wow64DisableWow64FsRedirection):", err.Error())
+		log.Println("Wow64DisableWow64FsRedirection:", err.Error())
 		return
 	}
 
@@ -36,7 +36,7 @@ func Wow64EnableWow64FsRedirection(enable uint) (err error) {
 
 	ret, _, err := pWow64EnableWow64FsRedirection.Call(uintptr(enable))
 	if ret == 0 {
-		log.Println("ERROR (Wow64EnableWow64FsRedirection):", err.Error())
+		log.Println("Wow64EnableWow64FsRedirection:", err.Error())
 		return
 	}
 
@@ -48,13 +48,13 @@ func Wow64RevertWow64FsRedirection(oldValue uintptr) (err error) {
 		return
 	}
 
-	// if osinfo.Is64bitOS() == false {
-	// 	return nil
-	// }
+	 if Is64bitOS() == false {
+	 	return nil
+	 }
 
 	ret, _, err := pWow64RevertWow64FsRedirection.Call(oldValue)
 	if ret == 0 {
-		log.Println("ERROR (Wow64RevertWow64FsRedirection):", err.Error())
+		log.Println("Wow64RevertWow64FsRedirection:", err.Error())
 		return
 	}
 
