@@ -21,6 +21,7 @@ var (
 	pGetVersionExW       = dKernel32.NewProc("GetVersionExW")
 	pVerSetConditionMask = dKernel32.NewProc("VerSetConditionMask")
 	pVerifyVersionInfo   = dKernel32.NewProc("VerifyVersionInfoW")
+	pIsWow64Process   = dKernel32.NewProc("IsWow64Process")
 
 	pWTSGetActiveConsoleSessionId = dKernel32.NewProc("WTSGetActiveConsoleSessionId")
 )

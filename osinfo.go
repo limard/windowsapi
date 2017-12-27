@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"syscall"
 	"unsafe"
+	"runtime"
 )
 
 type SSystemInfo struct {
@@ -22,21 +23,47 @@ type SSystemInfo struct {
 	wProcessorRevision          uint16
 }
 
+//func Is64bitOS() bool {
+//	if err := pGetNativeSystemInfo.Find(); err != nil {
+//		return false
+//	}
+//
+//	var info = SSystemInfo{}
+//
+//	ret, _, _ := pGetNativeSystemInfo.Call(uintptr(unsafe.Pointer(&info)))
+//	if ret == 0 {
+//		return false
+//	}
+//
+//	if info.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ||
+//		info.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64 {
+//		// log.Println("wProcessorArchitecture", info.wProcessorArchitecture)
+//		return true
+//	}
+//
+//	return false
+//}
+
 func Is64bitOS() bool {
-	if err := pGetNativeSystemInfo.Find(); err != nil {
+	if runtime.GOARCH == "amd64" {
+		return true
+	}
+
+	if pIsWow64Process.Find() != nil {
 		return false
 	}
 
-	var info = SSystemInfo{}
-
-	ret, _, _ := pGetNativeSystemInfo.Call(uintptr(unsafe.Pointer(&info)))
-	if ret == 0 {
+	handle, e := syscall.GetCurrentProcess()
+	if e != nil {
+		return false
+	}
+	is64 := 0
+	r1, _, _ := pIsWow64Process.Call(uintptr(handle), uintptr(unsafe.Pointer(&is64)))
+	if r1 != 1 {
 		return false
 	}
 
-	if info.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ||
-		info.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64 {
-		// log.Println("wProcessorArchitecture", info.wProcessorArchitecture)
+	if is64 == 1 {
 		return true
 	}
 
