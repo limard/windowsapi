@@ -90,7 +90,7 @@ func SHGetFolderPath(nFolder int) (string, error) {
 		uintptr(0), // dwFlags
 		uintptr(unsafe.Pointer(&pt[0])))
 	if ret == 0 {
-		// err = nil
+		err = nil
 	}
 
 	return syscall.UTF16ToString(pt), err

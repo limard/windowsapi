@@ -74,7 +74,7 @@ func DuplicateTokenEx(hExistingToken syscall.Token, dwDesiredAccess uint32) (sys
 	return phNewToken, nil
 }
 
-func SetTokenInformation(TokenHandle syscall.Token, TokenSessionId int, TokenInformation *uint32, TokenInformationLength uint32) error {
+func SetTokenInformation(TokenHandle syscall.Token, TokenSessionId uint32, TokenInformation *uint32, TokenInformationLength uint32) error {
 	r, _, e := pSetTokenInformation.Call(
 		uintptr(TokenHandle),
 		uintptr(TokenSessionId),
