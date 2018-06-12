@@ -66,3 +66,15 @@ func WTSGetActiveConsoleSessionId() (sessionId uint32, err error) {
 	err = nil
 	return
 }
+
+func ProcessIdToSessionId(processId uint32) (sessionId uint32, err error) {
+	p, e := loadProc(`Kernel32.dll`, `ProcessIdToSessionId`)
+	if e != nil {
+		return 0, e
+	}
+	r, _, e := p.Call(uintptr(processId), uintptr(unsafe.Pointer(&sessionId)))
+	if r == 0 {
+		return 0, e
+	}
+	return
+}
