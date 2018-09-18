@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func GetAppDir() string {
@@ -30,29 +31,59 @@ func GetAppExePath() string {
 	return p
 }
 
-// ParseCommand is spilt command to args
-func ParseCommand(command string) (commandArgs []string) {
-	var inQuote = false
-	var tempStr []byte
-	count := len(command)
-	for i := 0; i < count; i++ {
-		if command[i] == '"' {
-			// log.Println("\"")
-			inQuote = inQuote == false
+//ParseCommand is spilt command to args
+//https://github.com/golang-devops/parsecommand
+func ParseCommand(line string) ([]string) {
+	args := [][]rune{}
+
+	var quoteChar rune
+	var isInQuote bool = false
+
+	trimmedLine := strings.TrimSpace(line)
+
+	currentArg := []rune{}
+	for i, c := range trimmedLine {
+		isLastChar := i == len(trimmedLine)-1
+
+		if !isInQuote && (c == '"' || c == '\'') {
+			isInQuote = true
+			quoteChar = c
+			if isLastChar {
+				args = append(args, currentArg)
+			}
 			continue
 		}
 
-		if command[i] == ' ' && inQuote == false {
-			// log.Println(string(tempStr))
-			commandArgs = append(commandArgs, string(tempStr))
-			tempStr = make([]byte, 0)
-			continue
+		if isInQuote && c == quoteChar {
+			//Ensure it is not escaped with a slash beforehand
+			if i == 0 || trimmedLine[i-1] != '\\' {
+				isInQuote = false
+				if isLastChar {
+					args = append(args, currentArg)
+				}
+				continue
+			}
 		}
 
-		tempStr = append(tempStr, command[i])
+		if !isInQuote && c == ' ' {
+			//Ignore multiple spaces
+			if i > 0 && trimmedLine[i-1] != ' ' {
+				args = append(args, currentArg)
+				currentArg = []rune{}
+				continue
+			}
+		}
+
+		currentArg = append(currentArg, c)
+
+		if isLastChar {
+			args = append(args, currentArg)
+		}
 	}
 
-	commandArgs = append(commandArgs, string(tempStr))
-
-	return
+	strArgs := []string{}
+	for _, a := range args {
+		strArgs = append(strArgs, strings.TrimSpace(string(a)))
+	}
+	return strArgs
 }
