@@ -42,8 +42,9 @@ func ParseCommand(line string) ([]string) {
 	trimmedLine := strings.TrimSpace(line)
 
 	currentArg := []rune{}
+	trimmedLineLen := len(trimmedLine)
 	for i, c := range trimmedLine {
-		isLastChar := i == len(trimmedLine)-1
+		isLastChar := i + len(string(c)) == trimmedLineLen
 
 		if !isInQuote && (c == '"' || c == '\'') {
 			isInQuote = true
